@@ -1,6 +1,4 @@
-# Fresh Smart Attendance System (MySQL)
-
-This is a clean project. Do not mix these files with the previous project.
+# Smart Attendance System (MySQL)
 
 ## 1. Delete/recreate the old database
 `database.sql` intentionally starts with:
