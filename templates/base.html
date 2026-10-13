@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width,initial-scale=1"
+    >
+
+    <title>
+        {% block title %}
+        Smart Attendance
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+<nav>
+
+    <a
+        class="brand"
+        href="{{ url_for('student_attendance') }}"
+    >
+        Smart Attendance
+    </a>
+
+    <div>
+
+        {% if session.get('teacher_id') %}
+
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('analytics') }}">
+                Analytics
+            </a>
+
+            <a href="{{ url_for('students') }}">
+                Students
+            </a>
+
+            <a href="{{ url_for('records') }}">
+                Records
+            </a>
+
+            <a href="{{ url_for('teacher_logout') }}">
+                Logout
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('student_attendance') }}">
+                Attendance
+            </a>
+
+            <a href="{{ url_for('teacher_login') }}">
+                Teacher Login
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</nav>
+
+
+<main>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+
+        {% for c, m in msgs %}
+
+            <div class="flash {{ c }}">
+                {{ m }}
+            </div>
+
+        {% endfor %}
+
+    {% endwith %}
+
+
+    {% block content %}
+
+    {% endblock %}
+
+</main>
+
+</body>
+
+</html>

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="head">
+
+    <div>
+        <h1>Day-wise Records</h1>
+
+        <p class="muted">
+            View and export attendance records.
+        </p>
+    </div>
+
+    <form
+        class="dateform"
+        method="get"
+        action="{{ url_for('records') }}"
+    >
+
+        <input
+            type="date"
+            name="date"
+            value="{{ selected }}"
+            required
+        >
+
+        <button type="submit">
+            View Records
+        </button>
+
+    </form>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- CSV EXPORT BUTTONS -->
+<!-- ===================================================== -->
+
+<div
+    style="
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+        margin-bottom:20px;
+    "
+>
+
+    <a
+        href="{{ url_for(
+            'export_attendance',
+            date=selected
+        ) }}"
+        style="
+            display:inline-block;
+            padding:11px 18px;
+            background:#198754;
+            color:white;
+            border-radius:6px;
+            text-decoration:none;
+            font-weight:600;
+        "
+    >
+        Export Selected Date CSV
+    </a>
+
+
+    <a
+        href="{{ url_for('export_attendance') }}"
+        style="
+            display:inline-block;
+            padding:11px 18px;
+            background:#2563eb;
+            color:white;
+            border-radius:6px;
+            text-decoration:none;
+            font-weight:600;
+        "
+    >
+        Export All CSV
+    </a>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- RECORDS -->
+<!-- ===================================================== -->
+
+<div class="panel">
+
+    <h2>
+        Attendance for {{ selected }}
+    </h2>
+
+    <div style="overflow-x:auto;">
+
+        <table>
+
+            <tr>
+                <th>UID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Time</th>
+            </tr>
+
+
+            {% for r in rows %}
+
+            <tr>
+
+                <td>
+                    {{ r.student_id }}
+                </td>
+
+                <td>
+                    {{ r.name }}
+                </td>
+
+                <td>
+
+                    {% if r.status == "Present" %}
+
+                    <span class="badge present">
+                        Present
+                    </span>
+
+                    {% else %}
+
+                    <span
+                        class="badge"
+                        style="
+                            background:#fee2e2;
+                            color:#dc2626;
+                        "
+                    >
+                        Absent
+                    </span>
+
+                    {% endif %}
+
+                </td>
+
+                <td>
+                    {{ r.attendance_time
+                       if r.attendance_time
+                       else '—'
+                    }}
+                </td>
+
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="4">
+                    No students registered.
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

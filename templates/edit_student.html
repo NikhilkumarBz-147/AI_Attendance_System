@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block content %}
+<div class="formcard"><h1>Edit Student</h1><form method="post">
+<label>Student UID<input name="student_id" value="{{student.student_id}}" required></label>
+<label>Name<input name="name" value="{{student.name}}" required></label>
+<button>Save Changes</button></form></div>{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block content %}
+<h1>Register Face</h1><p><b>{{name}}</b> · {{uid}}</p>
+<div class="camera"><video id="video" autoplay playsinline></video></div>
+<button id="capture">Capture & Register</button><div id="msg" class="result neutral">Show exactly one face.</div>
+<script>
+const v=document.getElementById('video'),m=document.getElementById('msg');
+navigator.mediaDevices.getUserMedia({video:true}).then(s=>v.srcObject=s).catch(e=>m.textContent=e);
+document.getElementById('capture').onclick=async()=>{
+ const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
+ const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));const fd=new FormData();
+ fd.append('student_id',{{uid|tojson}});fd.append('name',{{name|tojson}});fd.append('frame',b,'face.jpg');
+ m.textContent='Processing...';const r=await fetch('/api/students/register',{method:'POST',body:fd});const d=await r.json();
+ m.textContent=d.message;if(d.ok){m.className='result success';setTimeout(()=>location.href='/students',900)}
+};
+</script>{% endblock %}

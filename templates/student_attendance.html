@@ -1,0 +1,66 @@
+{% extends "base.html" %}{% block title %}Mark Attendance{% endblock %}
+{% block content %}
+<div class="hero"><h1>Mark Your Attendance</h1><p>Look directly at the camera. Only one student should be visible.</p></div>
+<div class="camera camera-stage">
+  <video id="video" autoplay playsinline></video>
+  <canvas id="overlay"></canvas>
+</div>
+<div id="result" class="result neutral"><h2>Camera starting...</h2><p>Please wait.</p></div>
+<script>
+const video=document.getElementById('video');
+const overlay=document.getElementById('overlay');
+const ctx=overlay.getContext('2d');
+const box=document.getElementById('result');
+let busy=false;
+
+navigator.mediaDevices.getUserMedia({video:true}).then(s=>{
+  video.srcObject=s;
+  video.onloadedmetadata=()=>{
+    overlay.width=video.videoWidth; overlay.height=video.videoHeight;
+    setTimeout(scan,800);
+  };
+}).catch(e=>{box.className='result danger';box.innerHTML='<h2>Camera Error</h2><p>'+e+'</p>';});
+
+function drawFaces(faces){
+  ctx.clearRect(0,0,overlay.width,overlay.height);
+  for(const f of (faces||[])){
+    const state=f.state||'unknown';
+    let color = state==='marked' ? '#16a34a' : state==='already' ? '#f59e0b' : '#dc2626';
+    ctx.strokeStyle=color; ctx.lineWidth=5;
+    ctx.strokeRect(f.x,f.y,f.w,f.h);
+    const label=state==='marked'?'PRESENT':state==='already'?'ALREADY MARKED':state==='multiple'?'MULTIPLE FACES':'UNKNOWN';
+    ctx.font='bold 18px Arial';
+    const width=ctx.measureText(label).width+18;
+    const top=Math.max(0,f.y-32);
+    ctx.fillStyle=color; ctx.fillRect(f.x,top,width,32);
+    ctx.fillStyle='#fff'; ctx.fillText(label,f.x+9,top+22);
+  }
+}
+
+function showResult(d){
+  const cls=d.state==='marked'?'success':d.state==='already'?'warning':
+            (d.state==='unknown'||d.state==='multiple')?'danger':'neutral';
+  box.className='result '+cls;
+  box.innerHTML=`<h2>${d.name||'Attendance'}</h2>${d.uid?`<div class="uid">${d.uid}</div>`:''}<p>${d.message||'Please try again.'}</p>`;
+}
+
+async function scan(){
+  if(busy){setTimeout(scan,800);return;}
+  if(!video.videoWidth){setTimeout(scan,800);return;}
+  busy=true;
+  const c=document.createElement('canvas'); c.width=video.videoWidth; c.height=video.videoHeight;
+  c.getContext('2d').drawImage(video,0,0);
+  const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));
+  const fd=new FormData(); fd.append('frame',blob,'frame.jpg');
+  try{
+    const r=await fetch('/api/recognize',{method:'POST',body:fd});
+    const d=await r.json();
+    drawFaces(d.faces||[]);
+    showResult(d);
+  }catch(e){
+    drawFaces([]); box.className='result danger'; box.innerHTML='<h2>Error</h2><p>'+e+'</p>';
+  }
+  busy=false; setTimeout(scan,1200);
+}
+</script>
+{% endblock %}
